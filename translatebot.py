@@ -11,7 +11,7 @@ from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-config = 'config.jsn'
+config = 'config.json'
 base_url = 'https://api.eu-gb.language-translator.watson.cloud.ibm.com/instances/47d909f7-06bc-444e-8f4e-d8bf489343e9'
 lang_all = {}
 with open(config, 'r', encoding='utf-8') as c:
