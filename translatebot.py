@@ -68,7 +68,6 @@ def get_lang(id):
 
 def get_lang_text(text):
     ret = language_translator.identify(text).get_result()
-    # print(ret)
     lang_text = ret['languages'][0]['language']
     return lang_text
 
@@ -87,7 +86,6 @@ def translate(text, lang_sourse, lang_target):
         if lang_res != lang_sourse:
             try:
                 translation = language_translator.translate(text=text, source=lang_sourse, target=lang_res).get_result()
-                #print(json.dumps(translation, indent=2, ensure_ascii=False))
                 translate_res = translation['translations'][0]['translation']
             except Exception as e:
                 logger.error('Combination of languages is not allowed: {}'.format(e))
@@ -196,11 +194,12 @@ def main():
                         res_len = 0
                     if '-' in str(chat_id):
                         if lang_sourse == 'en' or lang_sourse == 'ru':
-                            bot.send_reply_message(translt, mid, chat_id)
+                            bot.send_reply_message('lang: ' + lang_sourse + '\n' + translt, mid, chat_id)
                         else:
                             bot.delete_message(mid)
+                            logger.info('delete message: {}, lang: {}'.format(text, lang_sourse))
                     else:
-                        bot.send_message(translt, chat_id)
+                        bot.send_message('lang: ' + lang_sourse + '\n' + translt, chat_id)
         # return jsonify(last_update)  # для webhook
 
 
