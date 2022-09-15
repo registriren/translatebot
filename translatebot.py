@@ -3,17 +3,16 @@ import sqlite3
 import os
 import json
 import logging
-from ibm_watson import LanguageTranslatorV3
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from libretranslatepy import LibreTranslateAPI
 
-# from flask import Flask, request, jsonify  # для webhook
+lt = LibreTranslateAPI("https://translate.argosopentech.com/")
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 config = 'config.json'
-base_url = 'https://api.eu-gb.language-translator.watson.cloud.ibm.com/instances/47d909f7-06bc-444e-8f4e-d8bf489343e9'
 lang_all = {}
+
 with open(config, 'r', encoding='utf-8') as c:
     conf = json.load(c)
     token = conf['access_token']
@@ -21,12 +20,6 @@ with open(config, 'r', encoding='utf-8') as c:
 
 bot = BotHandler(token)
 # app = Flask(__name__)  # для webhook
-
-authenticator = IAMAuthenticator(key)
-language_translator = LanguageTranslatorV3(
-    version='2018-05-01',
-    authenticator=authenticator)
-language_translator.set_service_url(base_url)
 
 if not os.path.isfile('users.db'):
     conn = sqlite3.connect("users.db")
@@ -67,11 +60,13 @@ def get_lang(id):
 
 
 def get_lang_text(text):
-    ret = language_translator.identify(text).get_result()
-    lang_text = ret['languages'][0]['language']
+    lang_detect = (lt.detect(text))
+    lang_text = lang_detect[0]['language']
+    print(lang_text)
     return lang_text
 
 
+"""
 def translate(text, lang_sourse, lang_target):
     translate_res = None
     if lang_target == 'auto':
@@ -90,7 +85,26 @@ def translate(text, lang_sourse, lang_target):
             except Exception as e:
                 logger.error('Combination of languages is not allowed: {}'.format(e))
     return translate_res
-
+"""
+def translate(text, lang_sourse, lang_target):
+    translate_res = None
+    if lang_target == 'auto':
+        lang_res = 'ru'
+    else:
+        lang_res = lang_target
+    if lang_sourse:
+        if lang_target == 'auto' and lang_sourse == 'ru':
+            lang_res = 'en'
+        if lang_target == 'auto' and lang_sourse == 'en':
+            lang_res = 'ru'
+        if lang_res != lang_sourse:
+            try:
+                #translation = language_translator.translate(text=text, source=lang_sourse, target=lang_res).get_result()
+                #print(response.text)
+                translate_res = lt.translate(text, lang_sourse, lang_res)
+            except Exception as e:
+                logger.error('Combination of languages is not allowed: {}'.format(e))
+    return translate_res
 
 # @app.route('/', methods=['POST'])  # для webhook
 def main():
