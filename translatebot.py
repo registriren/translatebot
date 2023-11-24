@@ -3,9 +3,8 @@ import sqlite3
 import os
 import json
 import logging
-from libretranslatepy import LibreTranslateAPI
-
-lt = LibreTranslateAPI("https://translate.argosopentech.com/")
+import translators as ts
+import detectlanguage
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,9 +15,11 @@ lang_all = {}
 with open(config, 'r', encoding='utf-8') as c:
     conf = json.load(c)
     token = conf['access_token']
-    key = conf['key']
+    key_detectlanguage = conf['key']
+    translator_drive = conf['translator']
 
 bot = BotHandler(token)
+detectlanguage.configuration.api_key = key_detectlanguage
 # app = Flask(__name__)  # для webhook
 
 if not os.path.isfile('users.db'):
@@ -60,9 +61,8 @@ def get_lang(id):
 
 
 def get_lang_text(text):
-    lang_detect = (lt.detect(text))
-    lang_text = lang_detect[0]['language']
-    print(lang_text)
+    lang_detect = detectlanguage.simple_detect(text)
+    lang_text = lang_detect
     return lang_text
 
 
@@ -86,6 +86,8 @@ def translate(text, lang_sourse, lang_target):
                 logger.error('Combination of languages is not allowed: {}'.format(e))
     return translate_res
 """
+
+
 def translate(text, lang_sourse, lang_target):
     translate_res = None
     if lang_target == 'auto':
@@ -99,12 +101,14 @@ def translate(text, lang_sourse, lang_target):
             lang_res = 'ru'
         if lang_res != lang_sourse:
             try:
-                #translation = language_translator.translate(text=text, source=lang_sourse, target=lang_res).get_result()
-                #print(response.text)
-                translate_res = lt.translate(text, lang_sourse, lang_res)
+                # translation = language_translator.translate(text=text, source=lang_sourse, target=lang_res).get_result()
+                # print(response.text)
+                # print(lang_sourse,'-',lang_res)
+                translate_res = ts.translate_text(text, translator_drive, lang_sourse, lang_res)
             except Exception as e:
                 logger.error('Combination of languages is not allowed: {}'.format(e))
     return translate_res
+
 
 # @app.route('/', methods=['POST'])  # для webhook
 def main():
