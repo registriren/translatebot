@@ -61,7 +61,11 @@ def get_lang(id):
 
 
 def get_lang_text(text):
-    lang_detect = detectlanguage.simple_detect(text)
+    try:
+        lang_detect = detectlanguage.simple_detect(text)
+    except Exception as e:
+        logger.error('NO langdetect: {}'.format(e))
+        lang_detect = None
     lang_text = lang_detect
     return lang_text
 
